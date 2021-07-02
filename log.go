@@ -44,6 +44,8 @@ func BootStrapLogger(cfg Config) (*zerolog.Logger, error) {
 	fileWriter, err := NewRollingWriter(cfg.LogFilePath, cfg.LogFileName)
 	if err == nil {
 		writers = append(writers, fileWriter)
+	} else {
+		stdlog.Printf("Failed to create rolling file writer: %s", err)
 	}
 
 	logger := log.Output(zerolog.MultiLevelWriter(writers...)).
