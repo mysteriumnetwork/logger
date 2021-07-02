@@ -1,6 +1,7 @@
 package mlog
 
 import (
+	"io"
 	stdlog "log"
 	"os"
 	"time"
@@ -36,12 +37,16 @@ func BootStrapLogger(cfg Config) (*zerolog.Logger, error) {
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 	zerolog.TimeFieldFormat = time.RFC3339Nano
 
-	consoleWriter := zerolog.ConsoleWriter{Out: os.Stderr}
+	writers := []io.Writer{}
+
+	writers = append(writers, zerolog.ConsoleWriter{Out: os.Stderr})
+
 	fileWriter, err := NewRollingWriter(cfg.LogFilePath, cfg.LogFileName)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		writers = append(writers, fileWriter)
 	}
-	logger := log.Output(zerolog.MultiLevelWriter(consoleWriter, fileWriter)).
+
+	logger := log.Output(zerolog.MultiLevelWriter(writers...)).
 		Level(zerolog.DebugLevel).
 		With().
 		Caller().
@@ -50,7 +55,7 @@ func BootStrapLogger(cfg Config) (*zerolog.Logger, error) {
 
 	setGlobalLogger(&logger)
 
-	return &logger, nil
+	return &logger, err
 }
 
 func setGlobalLogger(logger *zerolog.Logger) {
