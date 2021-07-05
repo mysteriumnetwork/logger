@@ -11,41 +11,26 @@ import (
 	"github.com/rs/zerolog/pkgerrors"
 )
 
-var DefaultConfig = Config{
-	LogFilePath: "/var/log/containers/",
-	LogFileName: "app",
-}
+const (
+	EnvLogMode = "MYSTERIUM_LOG_MODE"
+	ModeJSON   = "json"
+)
 
 type Config struct {
 	LogFilePath string
 	LogFileName string
 }
 
-func MustBootstrapDefaultLogger() *zerolog.Logger {
-	logger, err := BootStrapLogger(DefaultConfig)
-	if err != nil {
-		panic(err)
-	}
-	return logger
-}
-
-func BootstrapDefaultLogger() (*zerolog.Logger, error) {
-	return BootStrapLogger(DefaultConfig)
-}
-
-func BootStrapLogger(cfg Config) (*zerolog.Logger, error) {
+func BootstrapDefaultLogger() *zerolog.Logger {
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 	zerolog.TimeFieldFormat = time.RFC3339Nano
 
 	writers := []io.Writer{}
 
-	writers = append(writers, zerolog.ConsoleWriter{Out: os.Stderr})
-
-	fileWriter, err := NewRollingWriter(cfg.LogFilePath, cfg.LogFileName)
-	if err == nil {
-		writers = append(writers, fileWriter)
+	if isJSONMode() {
+		writers = append(writers, os.Stderr)
 	} else {
-		stdlog.Printf("Failed to create rolling file writer: %s", err)
+		writers = append(writers, zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
 	logger := log.Output(zerolog.MultiLevelWriter(writers...)).
@@ -57,11 +42,19 @@ func BootStrapLogger(cfg Config) (*zerolog.Logger, error) {
 
 	setGlobalLogger(&logger)
 
-	return &logger, err
+	return &logger
 }
 
 func setGlobalLogger(logger *zerolog.Logger) {
 	log.Logger = *logger
 	stdlog.SetFlags(0)
 	stdlog.SetOutput(log.Logger)
+}
+
+func isJSONMode() bool {
+	v, ok := os.LookupEnv(EnvLogMode)
+	if !ok {
+		return false
+	}
+	return v == ModeJSON
 }
