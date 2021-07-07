@@ -1,4 +1,4 @@
-module github.com/mysteriumnetwork/mysterium-logger
+module github.com/mysteriumnetwork/logger
 
 go 1.16
 
