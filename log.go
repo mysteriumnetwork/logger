@@ -1,4 +1,4 @@
-package mlog
+package logconfig
 
 import (
 	"io"
