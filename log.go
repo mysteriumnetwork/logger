@@ -45,6 +45,20 @@ func BootstrapDefaultLogger() *zerolog.Logger {
 	return &logger
 }
 
+// SetLevel given a logger sets it's level if possible.
+// If a given level string is not parseable, default log level is used.
+func SetLevel(l *zerolog.Logger, level string) *zerolog.Logger {
+	setLevel := zerolog.DebugLevel
+	if lvl, err := zerolog.ParseLevel(level); err == nil {
+		setLevel = lvl
+	}
+
+	logger := l.Level(setLevel)
+	setGlobalLogger(&logger)
+
+	return &logger
+}
+
 func setGlobalLogger(logger *zerolog.Logger) {
 	log.Logger = *logger
 	stdlog.SetFlags(0)
