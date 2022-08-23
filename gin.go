@@ -29,7 +29,18 @@ func GinLogFunc() gin.HandlerFunc {
 			path = path + "?" + raw
 		}
 
-		log.Info().Fields(map[string]interface{}{
+		logger := log.Debug()
+
+		switch {
+		case statusCode < 300:
+			logger = log.Debug()
+		case statusCode < 400:
+			logger = log.Info()
+		default:
+			logger = log.Error()
+		}
+
+		logger.Fields(map[string]interface{}{
 			"clientIP": clientIP,
 			"path":     path,
 			"method":   method,
