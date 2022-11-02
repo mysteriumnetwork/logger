@@ -21,11 +21,9 @@ type Config struct {
 	LogFileName string
 }
 
-func BootstrapDefaultLogger() *zerolog.Logger {
+func BootstrapDefaultLogger(writers ...io.Writer) *zerolog.Logger {
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 	zerolog.TimeFieldFormat = time.RFC3339Nano
-
-	writers := []io.Writer{}
 
 	if isJSONMode() {
 		writers = append(writers, os.Stderr)
