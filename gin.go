@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// Logger forces gin to use our logger
+// GinLogFunc - Logger forces gin to use our logger
 // Adapted from gin.Logger
 func GinLogFunc() gin.HandlerFunc {
 	return func(c *gin.Context) {
