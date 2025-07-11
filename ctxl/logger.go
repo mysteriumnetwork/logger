@@ -17,19 +17,19 @@ type Logger func(ctx context.Context) *zerolog.Logger
 
 func New(name string) func(ctx context.Context) *zerolog.Logger {
 	return func(ctx context.Context) *zerolog.Logger {
-		meta := GetMeta(ctx)
+		meta := GetFields(ctx)
 		logger := log.With().Stack().Str(KeyLoggerName, name).Fields(meta).Logger()
 		return &logger
 	}
 }
 
-func SetMetaFields(ctx context.Context, values map[string]interface{}) context.Context {
-	orig := GetMeta(ctx)
+func SetFields(ctx context.Context, values map[string]interface{}) context.Context {
+	orig := GetFields(ctx)
 	maps.Copy(orig, values)
 	return context.WithValue(ctx, KeyContextLoggerMeta, orig)
 }
 
-func SetMetaField(ctx context.Context, key string, value interface{}) context.Context {
+func SetField(ctx context.Context, key string, value interface{}) context.Context {
 	valuesAny := ctx.Value(KeyContextLoggerMeta)
 
 	values, ok := valuesAny.(map[string]interface{})
@@ -52,7 +52,7 @@ func SetMetaField(ctx context.Context, key string, value interface{}) context.Co
 	return context.WithValue(ctx, KeyContextLoggerMeta, values)
 }
 
-func GetMeta(ctx context.Context) map[string]interface{} {
+func GetFields(ctx context.Context) map[string]interface{} {
 	metaAny := ctx.Value(KeyContextLoggerMeta)
 	if metaAny == nil {
 		return emptyMeta
